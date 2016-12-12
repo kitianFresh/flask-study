@@ -16,3 +16,9 @@ except urllib2.URLError, e:
 else:
 	print "OK"
 page = response.read() 
+
+import pymysql
+
+conn = pymysql.connect(host='localhost', port=3306, user='root', passwd='777', db='huajiaogirls', charset='utf8mb4')
+
+print conn.cursor()
