@@ -86,7 +86,7 @@ def getImage(url):
 
 
 
-def saveImage(url, dir='/home/kinny/Study/Crawler/images/huajiaogirls', size=(1024,1024)):
+def saveImage(url, show=False, dir='/home/kinny/Study/Crawler/images/huajiaogirls', size=(1024,1024)):
 	'''
 	resize the image and save
 	'''
@@ -103,9 +103,11 @@ def saveImage(url, dir='/home/kinny/Study/Crawler/images/huajiaogirls', size=(10
 	file = cStringIO.StringIO(resp.read())
 	img = Image.open(file)
 	out = img.resize(size)
+	if show:
+		out.show()
 	out.save(os.path.join(dir,originalName))
 
-def spiderAllImages(usernum=10, dir='/home/kinny/Study/Crawler/images/huajiaogirls'):
+def spiderAllImages(usernum=10, show=False, dir='/home/kinny/Study/Crawler/images/huajiaogirls'):
 	count = 0
 	imageUrls = getUserImageUrls(usernum)
 	files = os.listdir(dir)
@@ -117,7 +119,7 @@ def spiderAllImages(usernum=10, dir='/home/kinny/Study/Crawler/images/huajiaogir
 			print("huajiaogirl image: " + imageurl + " have downloaded")
 			continue
 		count += 1
-		saveImage(imageurl)
+		saveImage(url=imageurl, show=show)
 		print(str(count) + " huajiaogirl image: " + imageurl + " saved to " + dir)
 		
 		
@@ -125,21 +127,31 @@ def spiderAllImages(usernum=10, dir='/home/kinny/Study/Crawler/images/huajiaogir
 
 def main(argv):
 	if len(argv) < 2:
-		print("Usage: python FaceImageFilter.py [spiderAllImages <userNums><output>]")
+		print("Usage: python ImageLoader.py [spiderAllImages <userNums><show:true/false><output>]")
 		exit()
 
 	if (argv[1] == 'spiderAllImages'):
-		nums = 100
-		if len(argv) == 3:
+		if len(argv) == 2:
+			spiderAllImages()
+		elif len(argv) == 3:
 			nums = argv[2]
-		elif len(argv) > 3:
-			print("Usage: python FaceImageFilter.py [spiderAllImages <userNums><output>]")
-			exit()
-		spiderAllImages(nums)
+			spiderAllImages(nums)
+		elif len(argv) == 4:
+			nums = argv[2]
+			show = True if argv[3] == "true" else False
+			spiderAllImages(usernum=nums, show=show)
+		elif len(argv) == 5:
+			nums = argv[2]
+			show = True if argv[3] == "true" else False
+			output = argv[4]
+			spiderAllImages(usernum=nums, show=show, dir=output)
+		else:
+			print("Usage: python ImageLoader.py [spiderAllImages <userNums><show:true/false><output>]")
+			exit()	
 	elif (argv[1] == 'getUserCount'):
 		print(getUserCount())
 	else:
-		print("Usage: python FaceImageFilter.py [spiderAllImages <userNums><output>]")
+		print("Usage: python ImageLoader.py [spiderAllImages|getUserCount <userNums><output>]")
 
 if __name__ == '__main__':
 	main(sys.argv)
