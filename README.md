@@ -1,54 +1,34 @@
 # Flask Study Notes
 
-### Requirements
- - python 2.7
- - Flask
- - mongoDB
- - pymongo
-
-### Flask web框架安装
-安装[Flask](http://flask.pocoo.org/docs/0.11/quickstart/)
-```
-pip install Flask
-```
-### Mongodb 安装
-安装[mongoDB](https://docs.mongodb.com/manual/installation/)
-```
-// ubuntu 16.04
-echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
-// ubuntu 14.04
-echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
-
-//国外repo直接安装太慢，因此这里把你的Ubuntu软件源更换为aliyun或者中科大的。
-//将上面的 http://repo.mongodb.org 更换为 http://mirrors.aliyun.com/mongodb
-echo "deb http://mirrors.aliyun.com/mongodb/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
-
-sudo apt-get update
-sudo apt-get install -y mongodb-org
-sudo service mongodb started
-sudo mongo
-
-```
-
-#### 参考
- - [官网](https://docs.mongodb.com/manual/installation/)
- - [install-mongodb-on-ubuntu-16.04](https://www.howtoforge.com/tutorial/install-mongodb-on-ubuntu-16.04/)
-
-#### 国外镜像安装过慢的方法
- - [Ubuntu16.04使用阿里云镜像安装Mongodb](http://www.linuxdiyf.com/linux/26151.html)
-
-### Mongodb的python客户端开发
-安装[python driver](https://docs.mongodb.com/getting-started/python/client/)
-```
-pip install pymongo
-```
-
-# repo fork notes
+## repo fork notes
 
  - [fork-a-repo](https://help.github.com/articles/fork-a-repo/)
  - [syncing-a-fork](https://help.github.com/articles/syncing-a-fork/)
  - [creating-a-pull-request](https://help.github.com/articles/creating-a-pull-request/)
+## Git出现merge或者pull与本地工作区状态冲突
+```
+Updating c5ba2bc..ad63656
+error: Your local changes to the following files would be overwritten by merge:
+    BloodTestReportOCR/static/index.html
+    BloodTestReportOCR/view.py
+Please, commit your changes or stash them before you can merge.
+Aborting
+```
 
+方案1： git stash，他会把当前工作区的保存到一个Git栈中,当需要取出来的时候，git stash pop会从Git栈中读取最近一次保存的内容，恢复工作区的相关内容
+```
+git stash
+git merge
+
+git stash list： 所有保存的git栈内的备份
+git stash pop： 弹出栈顶内容
+git stash clear： 清空Git栈
+```
+方案2：放弃本地修改就可以了
+```
+git reset --hard
+git pull
+```
 
 # flaskr 开发笔记
 
@@ -125,18 +105,18 @@ def initdb_command():
 
 
 # Python Deeplearning 杂记
-# Python dump/dumps,load/loads
-## JSON (JavaScript Object Notation)
+## Python dump/dumps,load/loads
+### JSON (JavaScript Object Notation)
 &emsp;&emsp;JSON是一种文件格式，同时也是JavaScript中的对象，JSON在python中的对应数据结构是dict.
  1. dump, 将一个python dict/list object 转换为JSON object，这样就可以写入文件或者用于网络传输
  2. load, 将一个JSON object 转换为python object(dict/list)，这样就可以在python程序中方便使用
 
-## dump，load 与dumps，loads的区别
+### dump，load 与dumps，loads的区别
  1. dump,load用于处理file objects
  2. dumps, loads用于处理string object自己
 
-## code examples:
-### writing dict to JSON file and reading JSON file to dict
+### code examples:
+#### writing dict to JSON file and reading JSON file to dict
 ```python
 import json
 
@@ -159,7 +139,7 @@ print(type(jsondict))
 jsonfile.close()
 ```
 
-### writing dict to JSON string and reading JSON string to dict
+#### writing dict to JSON string and reading JSON string to dict
 ```python
 import json
 
@@ -182,7 +162,7 @@ print(json.dumps(pdict))
 
 ```
 
-# 安装图像处理模块
+## 安装图像处理模块
 
 ```
 sudo pip install Pillow
@@ -428,27 +408,3 @@ var vm = new Vue({
 vm.b = 2
 ```
 
-## Git出现merge或者pull与本地工作区状态冲突
-```
-Updating c5ba2bc..ad63656
-error: Your local changes to the following files would be overwritten by merge:
-    BloodTestReportOCR/static/index.html
-    BloodTestReportOCR/view.py
-Please, commit your changes or stash them before you can merge.
-Aborting
-```
-
-方案1： git stash，他会把当前工作区的保存到一个Git栈中,当需要取出来的时候，git stash pop会从Git栈中读取最近一次保存的内容，恢复工作区的相关内容
-```
-git stash
-git merge
-
-git stash list： 所有保存的git栈内的备份
-git stash pop： 弹出栈顶内容
-git stash clear： 清空Git栈
-```
-方案2：放弃本地修改就可以了
-```
-git reset --hard
-git pull
-```
