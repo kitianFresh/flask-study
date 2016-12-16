@@ -123,131 +123,332 @@ def initdb_command():
 	print 'Initialized the database.'
 ```
 
-# 爬虫笔记
 
-## 坑爹的Fiddler
-千万不要装Fiddler，这个东西在Ubuntu下面不好使，基本上好多包都监听不了，而且还修改你的系统代理配置，导致我的wget curl一切网络有关的命令都无法使用了！真是坑爹啊！解决办法之一是暴力改回System wide proxy settings，可以参考[change-system-proxy-settings-command-line-ubuntu-desktop](http://ask.xmodulo.com/change-system-proxy-settings-command-line-ubuntu-desktop.html)，下面都是入坑之后的结果，都不能正常使用了。
-```
-kinny@kinny-Lenovo-XiaoXin:~$ curl https://www.youtube.com
-curl: (7) Failed to connect to 127.0.0.1 port 8888: Connection refused
+# Python Deeplearning 杂记
+# Python dump/dumps,load/loads
+## JSON (JavaScript Object Notation)
+&emsp;&emsp;JSON是一种文件格式，同时也是JavaScript中的对象，JSON在python中的对应数据结构是dict.
+ 1. dump, 将一个python dict/list object 转换为JSON object，这样就可以写入文件或者用于网络传输
+ 2. load, 将一个JSON object 转换为python object(dict/list)，这样就可以在python程序中方便使用
 
-kinny@kinny-Lenovo-XiaoXin:~$ proxychains curl https://www.youtube.com
-ProxyChains-3.1 (http://proxychains.sf.net)
-curl: (56) Proxy CONNECT aborted
+## dump，load 与dumps，loads的区别
+ 1. dump,load用于处理file objects
+ 2. dumps, loads用于处理string object自己
 
-kinny@kinny-Lenovo-XiaoXin:~$ wget https://www.charlesproxy.com/assets/release/4.0.2/charles-proxy-4.0.2.tar.gz
---2016-12-06 11:33:38--  https://www.charlesproxy.com/assets/release/4.0.2/charles-proxy-4.0.2.tar.gz
-Connecting to 127.0.0.1:8888... failed: Connection refused.
+## code examples:
+### writing dict to JSON file and reading JSON file to dict
+```python
+import json
 
-kinny@kinny-Lenovo-XiaoXin:~$ proxychains wget https://www.charlesproxy.com/assets/release/4.0.2/charles-proxy-4.0.2.tar.gz
-ProxyChains-3.1 (http://proxychains.sf.net)
---2016-12-06 11:33:47--  https://www.charlesproxy.com/assets/release/4.0.2/charles-proxy-4.0.2.tar.gz
-Connecting to 127.0.0.1:8888... connected.
-Failed reading proxy response: Success
-Retrying.
+# writing dict to JSON file
+pythondict = {
+    'name': 'kinny',
+    'age': 1000,
+    'skills': ['programmer', 'musician', 'painter']
+}
 
---2016-12-06 11:33:48--  (try: 2)  https://www.charlesproxy.com/assets/release/4.0.2/charles-proxy-4.0.2.tar.gz
-Connecting to 127.0.0.1:8888... connected.
-Failed reading proxy response: Success
-Retrying.
+with open("file.json", 'w') as outfile:
+    json.dump(pythondict, outfile, indent=4)
+    # indent =4 is for indenting the json aka pretty printing but will need more space because spaces fill
 
-^C
-```
-
-## uninstall mono
-参考：[how-to-permanently-remove-all-mono-related-package-libs-apps-etc](http://unix.stackexchange.com/questions/2035/how-to-permanently-remove-all-mono-related-package-libs-apps-etc)
-
-
-## 关键点
- 1. 爬虫要定时执行，对于已经采集到的数据，采取何种更新策略
- 2. 直播历史数据需要请求相应的ajax接口，对收到的数据进行json解码分析
- 3. 主播昵称包含emoji表情，如果数据库使用常用的编码”utf8″则会写入报错
- 4. 过滤直播地址来获取直播id时，需要使用到正则匹配，我使用的是Python库”re”
- 5. 分析html，我使用的是”BeautifulSoup”
- 6. 读写mysql，我使用的是”pymysql”
-
-## 技巧
- 1. 没有使用mysql的“INSERT”，而是使用了“REPLACE”,是当包含同样的FUserId的一条记录被写入时将替换原来的记录，这样能够保证爬虫定时更新到最新的数据。
- 2. Tbl_Huajiao_Live用于存储主播的历史直播数据，其中字段FScrapedTime是每次记录更新的时间，依靠此字段可以实现简单的更新策略。
-
-## 错误
-1.
-```
-File "/usr/local/lib/python2.7/dist-packages/pymysql/connections.py", line 659, in __init__
-    self.encoding = charset_by_name(self.charset).encoding
-AttributeError: 'NoneType' object has no attribute 'encoding'
-
-conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='XXX', db='huajiaogirls', charset='utf-8')
-```
-改为charset='utf-8'
-
-2.
-```
-{"errno":0,"msg":"","data":[]}没有对这种返回处理，没有错误，只是没有直播历史而已
+# reading JSON file to dict    
+jsonfile = open("file.json", 'r')
+jsondict = json.load(jsonfile)
+print(type(jsondict))
+# the 'jsondict' is a python dict object
+jsonfile.close()
 ```
 
-3. UserId 解析总是会包含错误，原因是这个，有些title 中名字里包含数字，导致解析错误,列如下面的;方案有两种，直接更换解析Title的正则，先识别出ID:XXX,在拿出XXX； 另一种可以不从Title标签里选择，可以从另一个地方，<div id="author-info"></div>里面拿出来
-```Python
-Text: 【怼+01】💖萌哒哒✨甜甜圈💖正在直播《Ccccccccc》，ta的花椒ID:33412388，快来关注吧 - 花椒直播,美颜椒友,疯狂卖萌
-UserId: 01 
-#res = re.findall("[0-9]+", text)
-#print "UserId: " + res[0]
-'NoneType' object has no attribute 'find'
-01:html parse error in getUserData()
+### writing dict to JSON string and reading JSON string to dict
+```python
+import json
+
+'''
+Python 3 with aiohttp package.
+'''
+# reading a JSON string to dict
+jsonstring = '{"name": "kinny", "age": 1000, "skills" : ["programmer", "musician", "painter"]}'
+
+pdict = json.loads(jsonstring)
+print(type(pdict))
+print(pdict)
+
+# write a python dict/list to JSON string
+print(json.dumps(pdict))
+
+
+# networks json data trainsition
+# web.Response(status=response_code,body=json.dumps(response).encode('utf-8'),content_type='application/json',charset='utf-8')
 
 ```
-采用第一种，又发现这样的；因此为了保险，还是采用Html元素里的比较保险，格式比较统一， Title里是字符串拼接出来的，可能格式有点不一样
-```
-Text: 叫我阿佳吖正在直播,ta的花椒id:81425289,快来关注吧 - 花椒直播,美颜椒友,疯狂卖萌
-```
 
-
-## utf8mb4可以让MySql支持emoji，方案之一是采用utf8mb4编码
-在创建数据库和表格的时候，采用此编码,然后在连接数据库的时候也制定该编码
-```
-DROP DATABASE IF EXISTS `huajiaogirls`;
-CREATE DATABASE `huajiaogirls` DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci;
-USE `huajiaogirls`;
-set names utf8mb4;
-
-DROP TABLE IF EXISTS `Tbl_Huajiao_Live`;
-CREATE TABLE `Tbl_Huajiao_Live` (
-    `FLiveId` INT UNSIGNED NOT NULL,
-    `FUserId` INT UNSIGNED NOT NULL,
-    `FWatches` INT UNSIGNED NOT NULL DEFAULT 0  COMMENT '观看人数',
-    `FPraises` INT UNSIGNED NOT NULL DEFAULT 0  COMMENT '赞数',
-    `FReposts` INT UNSIGNED NOT NULL DEFAULT 0  COMMENT 'unknown',
-    `FReplies` INT UNSIGNED NOT NULL DEFAULT 0  COMMENT 'unknown',
-    `FPublishTimestamp` INT UNSIGNED NOT NULL COMMENT '发布日期',
-    `FTitle` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '直播名称',
-    `FImage` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '直播封面',
-    `FLocation` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '地点',
-    `FScrapedTime` timestamp NOT NULL COMMENT '爬虫更新时间',
-    PRIMARY KEY (`FLiveId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+# 安装图像处理模块
 
 ```
- - [让MySQL支持emoji表情符号存储](http://www.hi-linux.com/2016/03/28/%E8%AE%A9MySQL%E6%94%AF%E6%8C%81emoji%E8%A1%A8%E6%83%85%E7%AC%A6%E5%8F%B7%E5%AD%98%E5%82%A8/)
- - [Emoji表情符号在MySQL数据库中的存储](http://www.jianshu.com/p/20740071d854)
+sudo pip install Pillow
+//tesseract-ocr库
+sudo apt-get install tesseract-ocr
+// tesseract-ocr pthon wrapper
+sudo pip install pytesseract
 
-## 瑕疵
+//tesseract-ocr默认没有中文字符集，下载中文字符集
+wget https://github.com/tesseract-ocr/tessdata/raw/master/chi_sim.traineddata
+
+//然后copy到目录/usr/share/tesseract-ocr/tessdata/
+sudo cp chi_sim.traineddata /usr/share/tesseract-ocr/tessdata/
+
+//example
+from PIL import Image
+import pytesseract
+print(pytesseract.image_to_string(Image.open('血常规.jpg'), lang='chi_sim'))
+
 ```
-replaceUserData except, userId=76270958
-replaceUserData except, userId=55518755
-replaceUserData except, userId=28740588
-replaceUserData except, userId=21398501
-replaceUserData except, userId=25241354
-replaceUserData except, userId=56930235
-replaceUserData except, userId=54599384
-replaceUserData except, userId=83262321
-replaceUserData except, userId=75036102
+## 安装Python机器视觉编程[英文](http://programmingcomputervision.com/)[中文](http://yongyuan.name/pcvwithpython/)中PCV库
+依赖
+```
+sudo pip install numpy
+sudo pip install matplotlib
+sudo pip install scipy
 
-'decimal' codec can't encode characters in position 2-4: invalid decimal Unicode string
-'decimal' codec can't encode character u'\U0001f412' in position 0: invalid decimal Unicode string
+```
+[下载库到本地](https://github.com/jesolem/PCV/zipball/master)
+```
+cd jesolem-PCV-376d597/
+sudo python setup.py install
 
-UserId: uid
-'NoneType' object has no attribute 'find'
-uid:html parse error in getUserData()
+//以下命令可以用来确定Ubuntu系统拥有的字体和位置
+fc-list :lang=zh 
+
+import PCV
 ```
 
-## 变换user agent
+## 参考
+ - [基本的图像处理与 OCR 文字识别工具总结 (Python)](https://testerhome.com/topics/4615)
+
+# 安装VScode
+1.下载[压缩包](https://code.visualstudio.com/Download)code-stable-code_1.7.2-1479766213_amd64.tar.gz
+```
+cd Download
+
+//解压到/opt目录
+sudo tar -xzf code-stable-code_1.7.2-1479766213_amd64.tar.gz -C /opt
+
+//创建VSCode软连接，目的是方便以后更换新版本VSCode就不用配置了，直接替换当前的VSCode-linux-x64
+sudo ln -s /opt/VSCode-linux-x64/ /opt/VSCode
+
+//创建运行的软连接，这样就可以在任意目录运行code,其实可以直接进入VSCode-linux-x64目录下面运行code，
+//或者直接配置环境变量，以下配置是为了保持系统环境变量的干净整洁
+//这里因为/usr/local/bin默认总是在环境变量中，所以下载的软件都可以这样做，
+sudo ln -s /opt/VSCode/code /usr/local/bin/code
+
+code .
+```
+2.可以配置桌面快捷方式，编辑文件： sudo vi /usr/share/applications/VSCode.desktop
+```
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Version=1.7.2
+Type=Application
+Terminal=false
+Exec=/opt/VSCode/code
+Name=VSCode
+Icon=/opt/VSCode/resources/app/resources/linux/code.png
+Categories=Development
+```
+
+# 实现图片上传到服务器并写入mongodb
+### Requirements
+ - python 2.7
+ - Flask
+ - mongoDB
+ - pymongo
+
+### Flask web框架安装
+安装[Flask](http://flask.pocoo.org/docs/0.11/quickstart/)
+```
+pip install Flask
+```
+### Mongodb 安装
+安装[mongoDB](https://docs.mongodb.com/manual/installation/)
+```
+// ubuntu 16.04
+echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+// ubuntu 14.04
+echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+
+//国外repo直接安装太慢，因此这里把你的Ubuntu软件源更换为aliyun或者中科大的。
+//将上面的 http://repo.mongodb.org 更换为 http://mirrors.aliyun.com/mongodb
+echo "deb http://mirrors.aliyun.com/mongodb/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+
+sudo apt-get update
+sudo apt-get install -y mongodb-org
+sudo service mongodb started
+sudo mongo
+
+```
+
+#### 参考
+ - [官网](https://docs.mongodb.com/manual/installation/)
+ - [install-mongodb-on-ubuntu-16.04](https://www.howtoforge.com/tutorial/install-mongodb-on-ubuntu-16.04/)
+
+#### 国外镜像安装过慢的方法
+ - [Ubuntu16.04使用阿里云镜像安装Mongodb](http://www.linuxdiyf.com/linux/26151.html)
+
+### Mongodb的python客户端开发
+安装[python driver](https://docs.mongodb.com/getting-started/python/client/)
+```
+pip install pymongo
+```
+fast tutorial
+```
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from pymongo import MongoClient
+
+# CRUD
+# create
+# 1. create a connection
+client = MongoClient("mongodb://localhost:27017")
+#default connect to mongodb://localhost:27017
+#client = MongoClient()
+
+# 2. access database objects, remote database object assign to local db
+db = client.test
+#db = client['test'] dictionary-style
+
+# 3. access collection objects
+coll = db.restaurants
+#coll = db['restaurants']
+
+
+
+# update
+from datetime import datetime
+'''Python
+The operation returns an InsertOneResult object, 
+which includes an attribute inserted_id that contains the _id of the inserted document. 
+Access the inserted_id attribute:
+
+result = coll.insert_one(
+    {
+        "address": {
+            "street": "2 Avenue",
+            "zipcode": "10075",
+            "building": "1480",
+            "coord": [-73.9557413, 40.7720266]
+        },
+        "borough": "Manhattan",
+        "cuisine": "Italian",
+        "grades": [
+            {
+                "date": datetime.strptime("2014-10-01", "%Y-%m-%d"),
+                "grade": "A",
+                "score": 11
+            },
+            {
+                "date": datetime.strptime("2014-01-16", "%Y-%m-%d"),
+                "grade": "B",
+                "score": 17
+            }
+        ],
+        "name": "Vella",
+        "restaurant_id": "41704620"
+
+    }
+)
+print(result.inserted_id)
+'''
+
+# read
+# query by a top level field
+cursor = db.restaurants.find({"borough": "Manhattan"})
+for document in cursor:
+    print(document)
+
+# query by a field in an embedded document,use dot notation
+cursor = db.restaurants.find({"address.zipcode": "10075"})
+for document in cursor:
+    print(document)
+```
+
+# javascript新手掉坑指南
+
+## Python后台如果传回HTML文本，那么HTML文本需要转义字符转义
+
+```
+"initialPreview": "<img src=\'/file/{0}\' class=\'file-preview-image\' style=\'width:100%\'>".format(fid)
+"initialPreview": "<img src=\'/file/%s\' class=\'file-preview-image\' style=\'width:100%%\'>"%(fid)
+```
+## JQuery element.show()不起作用，和css有关
+[jQuery show() for Twitter Bootstrap css class hidden](http://stackoverflow.com/questions/14610412/jquery-show-for-twitter-bootstrap-css-class-hidden)
+
+## JQuery 表单提交后监听事件处理
+[Sending multipart/formdata with jQuery.ajax](http://stackoverflow.com/questions/5392344/sending-multipart-formdata-with-jquery-ajax)
+```javascript
+首先对表单元素进行submit监听，回调函数中使用$.ajax自己传输数据，
+但是对要传输的数据使用new FromData(this)
+$(document).on('submit', "form#data", function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: new FormData(this),
+            processData: false,
+            contentType: false
+        }).done(function(data) {
+            console.log(data.templates);
+            $("#filtered-image").empty().append(data.templates);
+        });
+
+});
+```
+
+## JQuery 动态增删改除元素或内容
+当select内容本身为空时，直接调用add不起作用，应该用append，因为不一定支持add方法，w3school是最权威的，里面并没有add方法，但是有的jQuery文档可能有
+```
+empty() will remove all the contents of the selection.
+remove() will remove the selection and its contents.
+```
+## JQuery “Uncaught SyntaxError: Unexpected token o”
+[i-keep-getting-uncaught-syntaxerror-unexpected-token-o](http://stackoverflow.com/questions/8081701/i-keep-getting-uncaught-syntaxerror-unexpected-token-o)
+```
+ jQuery takes a guess about the datatype. It does the JSON parsing even though you're not calling getJSON()
+Basically if the response header is text/html you need to parse, and if the response header is application/json it is already parsed for you.
+```
+## vue.js 访问model data的方式
+```
+var vm = new Vue({
+  data:{
+  a:1
+  }
+})
+// `vm.a` 是响应的
+vm.b = 2
+```
+
+## Git出现merge或者pull与本地工作区状态冲突
+```
+Updating c5ba2bc..ad63656
+error: Your local changes to the following files would be overwritten by merge:
+    BloodTestReportOCR/static/index.html
+    BloodTestReportOCR/view.py
+Please, commit your changes or stash them before you can merge.
+Aborting
+```
+
+方案1： git stash，他会把当前工作区的保存到一个Git栈中,当需要取出来的时候，git stash pop会从Git栈中读取最近一次保存的内容，恢复工作区的相关内容
+```
+git stash
+git merge
+
+git stash list： 所有保存的git栈内的备份
+git stash pop： 弹出栈顶内容
+git stash clear： 清空Git栈
+```
+方案2：放弃本地修改就可以了
+```
+git reset --hard
+git pull
+```
