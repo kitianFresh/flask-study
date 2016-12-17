@@ -60,7 +60,7 @@ def getUserImageUrl(userId):
 
 def getUserImageUrls(usernum=10):
 	images = []
-	userIds = selectUserIds(usernum);
+	userIds = selectUserIds(usernum)
 	for userId in userIds:
 		images.extend(getUserImageUrl(userId[0]))
 	return images

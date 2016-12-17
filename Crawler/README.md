@@ -1,6 +1,10 @@
 
 # 爬虫笔记
 
+## 注意
+### Python 中的file.name 
+file.name是包含整个传递进来的路径的，如果仅仅想要获得文件的名字，使用os.path.basename(file.name)
+
 ## 坑爹的Fiddler
 千万不要装Fiddler，这个东西在Ubuntu下面不好使，基本上好多包都监听不了，而且还修改你的系统代理配置，导致我的wget curl一切网络有关的命令都无法使用了！真是坑爹啊！解决办法之一是暴力改回System wide proxy settings，可以参考[change-system-proxy-settings-command-line-ubuntu-desktop](http://ask.xmodulo.com/change-system-proxy-settings-command-line-ubuntu-desktop.html)，下面都是入坑之后的结果，都不能正常使用了。
 ```
