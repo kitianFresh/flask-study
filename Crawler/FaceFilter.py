@@ -10,6 +10,7 @@ import urllib
 import urllib2
 import pprint
 import json
+import pymysql
 
 class MultiPartForm(object):
     """Accumulate the data to be used when posting a form."""
@@ -74,6 +75,42 @@ class MultiPartForm(object):
         flattened.append('')
         return '\r\n'.join(flattened)
 
+def getMysqlConn():
+    conn = pymysql.connect(host='localhost', port=3306, user='root', passwd='777', db='huajiaogirls', charset='utf8mb4')
+    return conn
+
+def insertBeautyFace(data):
+    conn = getMysqlConn()
+    cur = conn.cursor()
+    try:
+        cur = conn.cursor()
+        cur.execute("USE huajiaogirls")
+        cur.execute("set names utf8mb4")
+        cur.execute("INSERT INTO Tbl_Beauty_Face (FImageUrl, FImageOriginal, FImageFiltered, FImageLandmarks) VALUES (%s, %s, %s, %s)", (data['FImageUrl'], data['FImageOriginal'], data['FImageFiltered'], data['FImageLandmarks'])
+        )
+        conn.commit()
+    except pymysql.err.InternalError as e:
+        print 'insertBeautyFace Except'
+        print(e)
+
+# get all face image names
+def getBeautyFace(num):
+    conn = getMysqlConn()
+    cur = conn.cursor()
+    try:
+        cur = conn.cursor()
+        cur.execute("USE huajiaogirls")
+        cur.execute("set names utf8mb4")
+        cur.execute("SELECT FImageOriginal FROM Tbl_Beauty_Face ORDER BY FFaceId DESC LIMIT " + str(num))
+        ret = cur.fetchall()
+        faces = []
+        for face in ret:
+            faces.append(face[0].split('/')[-1])
+        return faces
+    except:
+        print("getBeautyFace except")
+        return None
+
 def rectify(x, y, size):
         return (x-size, y-size, x+size, y+size)
 
@@ -126,8 +163,8 @@ def draw_all(draw, landmarks, size=3, fill=(255,255,0,128)):
 def detect_face(path, show=False, apiUrl="https://api-cn.faceplusplus.com/facepp/v3/detect", output="/home/kinny/Study/Crawler/images/huajiaogirlfaces"):
     # Create the form with simple fields
     form = MultiPartForm()
-    form.add_field("api_key", "9vCBl6liohIj_a3PyGslySkJp1q4tf5H")
-    form.add_field("api_secret", "BVt1JGKV8jujzqi6dj751VksZ8ZPKHu7")
+    form.add_field("api_key", "DfpzY7qZ8IyCf3ThIcHomfBS65YcGH6k")
+    form.add_field("api_secret", "k7gqF6OD7v77zUxA5B3Ge9EQCRoJ75mq")
     form.add_field("return_landmark", "1")
     
     image = open(path, 'rb')
@@ -145,6 +182,7 @@ def detect_face(path, show=False, apiUrl="https://api-cn.faceplusplus.com/facepp
     r = urllib2.urlopen(request)
     features = json.loads(r.read())
     #pp.pprint(features)
+    # response [] means no faces
     if not features['faces']:
         print path + " contains no faces!"
         return
@@ -162,9 +200,19 @@ def detect_face(path, show=False, apiUrl="https://api-cn.faceplusplus.com/facepp
     draw_left_eye(draw, landmarks, 3)
     draw_right_eye(draw, landmarks, 3)
     #draw_all(draw, landmarks, 3)
-    im.show()
+    if show:
+        #im_original.show()
+        im.show()
     out = os.path.join(output, os.path.basename(image.name))
     im.save(out)
+    # sync to mysql 
+    data = {
+        "FImageUrl": "http://image.huajiao.com/" + os.path.basename(image.name), 
+        "FImageOriginal": path, 
+        "FImageFiltered": out, 
+        "FImageLandmarks": json.dumps(landmarks)
+    }
+    insertBeautyFace(data)
     print "save detected face image to " + out
     image.close()
     del draw
@@ -172,15 +220,20 @@ def detect_face(path, show=False, apiUrl="https://api-cn.faceplusplus.com/facepp
 
 def detect_faces(imageNums=10, apiUrl="https://api-cn.faceplusplus.com/facepp/v3/detect", input='/home/kinny/Study/Crawler/images/huajiaogirls'):
     count = 0
-    files = os.listdir(input)
-    for file in files:
+    image_names = os.listdir(input)
+    detected_face_image_names = getBeautyFace(2000)
+    
+    for image in image_names:
         if count == imageNums:
             break
-        path = os.path.join(input, file)
+        if image in detected_face_image_names:
+            print path + "have already detected"
+            continue
+        path = os.path.join(input, image)
         print "detect " + path
         detect_face(path, True, apiUrl)
         count += 1
-        # avoid concurrency limits
+        # avoid api invoke concurrency limits
         from time import sleep
         sleep(10)
     

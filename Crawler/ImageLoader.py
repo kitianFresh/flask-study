@@ -98,8 +98,8 @@ def saveImage(url, show=False, dir='/home/kinny/Study/Crawler/images/huajiaogirl
 	try:
 		resp = urlopen(request)
 	except urllib2.URLError as e:
-		print e
-		print "Service Error happen when scrapy url: " + url
+		print "Service Error " + str(e) + "happened when scrapy url: " + url
+		return
 	file = cStringIO.StringIO(resp.read())
 	img = Image.open(file)
 	out = img.resize(size)
