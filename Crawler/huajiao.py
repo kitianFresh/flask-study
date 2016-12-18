@@ -167,6 +167,7 @@ def getLiveCount():
 	ret = cur.fetchone()
 	return ret[0]
 
+# Note all mysql fetchall() return an array of tuple, you need for e in arr e[0] e[1] e[2]... to access
 def selectUserIds(num):
 	conn = getMysqlConn()
 	cur = conn.cursor()
