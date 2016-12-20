@@ -49,7 +49,7 @@ Traceback (most recent call last):
 NameError: name 'x' is not defined
 '''
 ```
-#### 5. 闭包 Closure
+### 5. 闭包 Closure
 我们来看一个奇特的现象，这个现象会结合函数式和变量生命周期来解释。既然 outer 已经调用完成了， 那么 x 的 生命周期 就结束了， 应该被销毁了， 
 但是我们却可以在 f() 即 inner 函数内部继续访问到 x 即 outer 作用域内的 x；这个就是 Python 的闭包 closure。
 Python supports a feature called function closures which means that inner functions 
@@ -69,7 +69,26 @@ f.func_closure
 (<cell at 0x7fe28f4f4328: int object at 0x22f6158>,)
 '''
 ```
+### Decorator
+什么是装饰器，就是装饰函数或者类的函数或者类。那么他就必须接受 一个函数或者类当参数， 然后装饰它， 最后返回 装饰好的 函数或类。类比大象放冰箱分三步，decorator三步走：
+ 1. 把 **被装饰者** **传递**给 **装饰者**;
+ 2. 在 装饰者 **内部装饰** 这个 被装饰者。由于 需要返回一个 被装饰的 对象， 因此 **在装饰者 内部 一定至少会 定义一个新的 函数**;
+ 3. **返回 装饰者 新定义的 函数对象 即经过装饰后的对象**;
+```Python
+def decorator(original_func):
 
+    def decorated(*args, **kwargs):
+        # code before original_func
+        original_func(*args, **kwargs)
+        # code after original_func
+    return decorated
+
+def decorated():
+    # code
+
+decorated = decorator(decorated)
+decorated()
+```
 
 ## 参考
  - [Decorators](http://python-3-patterns-idioms-test.readthedocs.io/en/latest/PythonDecorators.html)
