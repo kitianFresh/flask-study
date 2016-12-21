@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 
 def some_timing_or_spacing_operation():
+    print "some_timing_or_spacing_operation"
     return 6666
 
 class RawLazyClass(object):
@@ -41,6 +42,7 @@ class AttrLazyClass(object):
 # 解释器执行到@lazy_property def lazy_value(self): 时，再一次self.lazy_value = lazy_property(self.lazy_value);实际上还是一个函数
 # 只是这个函数被重新定义了，这就是装饰器的魅力所在，装饰器三步走，扔进去，装饰，提出来
 def lazy_property(func):
+    # 这里 属性名 也不能和 方法重名，否则 AttributeError: can't set attribute
     attr_name = "_" + func.__name__
 
     @property
@@ -79,6 +81,7 @@ class LazyProperty(object):
             return self
         else:
             value = self.func(instance)
+            # 这里可以重名， 因为这里的 self.lazy_value已经变成成员变量了
             setattr(instance, self.func.__name__, value)
             return value
 
@@ -95,22 +98,72 @@ class AnotherMagicLazyClass(object):
     def lazy_value(self):
         return some_timing_or_spacing_operation()
 
+class YetAnotherMagicLazyClass(object):
+
+    '''
+    Python magic snytax sugar, use decorator
+    '''
+
+    def __init__(self):
+        self.lazy_value = 777
+
+    @LazyProperty
+    #@lazy_property 报错 AttributeError: can't set attribute
+    def lazy_value(self):
+        return some_timing_or_spacing_operation()
+
 r = RawLazyClass()
 print r.__dict__
 print r.lazy_value
 print r.__dict__
+print "---------------------------------------------"
 
 a = AttrLazyClass()
 print a.__dict__
 print a.lazy_value
 print a.__dict__
+print "---------------------------------------------"
 
 m = MagicLazyClass()
 print m.__dict__
 print m.lazy_value
 print m.__dict__
+print "---------------------------------------------"
 
 am = AnotherMagicLazyClass()
 print am.__dict__
 print am.lazy_value
 print am.__dict__
+print "---------------------------------------------"
+
+yam = YetAnotherMagicLazyClass()
+print yam.__dict__
+print yam.lazy_value
+print yam.__dict__
+
+'''
+{'_lazy_value': None}
+some_timing_or_spacing_operation
+6666
+{'_lazy_value': 6666}
+---------------------------------------------
+{}
+some_timing_or_spacing_operation
+6666
+{'_lazy_value': 6666}
+---------------------------------------------
+{}
+some_timing_or_spacing_operation
+6666
+{'_lazy_value': 6666}
+---------------------------------------------
+{}
+some_timing_or_spacing_operation
+6666
+{'lazy_value': 6666}
+---------------------------------------------
+{'lazy_value': 777}
+777
+{'lazy_value': 777}
+
+'''
