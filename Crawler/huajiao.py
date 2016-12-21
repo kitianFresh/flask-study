@@ -56,8 +56,8 @@ def getLiveIdsFromGoddessComePage():
 def getLiveIdsFromCategory(baseUrl="http://www.huajiao.com/category/", categoryNo=999, pageCount=8):
 	liveIds = set()
 	for pageno in range(int(pageCount)+1):
-		liveIds |= filterLiveIds(baseUrl + categoryNo + "?pageno=" + str(pageno+1))
-		print liveIds
+		liveIds |= filterLiveIds(baseUrl + str(categoryNo) + "?pageno=" + str(pageno+1))
+		#print liveIds
 	return liveIds
 
 # get user id from live page
@@ -76,9 +76,9 @@ def getUserId(liveId):
 	bsObj = BeautifulSoup(html, "html.parser")
 	authorInfo = bsObj.findAll(id="author-info")
 	authorId = authorInfo[0].findAll("p", class_="author-id")
-	print authorId[0].text
+	#print authorId[0].text
 	res = authorId[0].text.split(' ')[1]
-	print "UserId: " + res
+	#print "UserId: " + res
 	return res
 
 
@@ -92,7 +92,7 @@ def getUserData(userId):
 		data['FAvatar'] = userInfoObj.find("div", {"class": "avatar"}).img.attrs['src']
 		userId = userInfoObj.find("p", {"class":"user_id"}).get_text()
 		data['FUserId'] = re.findall("[0-9]+", userId)[0]
-		print("data['FUserId']: " + data['FUserId'])
+		#print("data['FUserId']: " + data['FUserId'])
 		tmp = userInfoObj.h3.get_text('|', strip=True).split('|')
 		#print("UserName: " + tmp[0].encode("utf8"))
 		data['FUserName'] = tmp[0]
@@ -136,7 +136,7 @@ def spiderUserDatas(baseUrl="http://www.huajiao.com/category/", categoryNo=999, 
 def spiderUserLives(nums):
 	userIds = selectUserIds(nums)
 	for userId in userIds:
-		#print userId
+		#print userId json data
 		liveDatas = getUserLives(userId[0])
 		if liveDatas == 0:
 			continue
@@ -195,10 +195,17 @@ def replaceUserData(data):
 		cur.execute("REPLACE INTO Tbl_Huajiao_User(FUserId,FUserName, FLevel, FFollow,FFollowed,FSupported,FExperience,FAvatar,FScrapedTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)", (int(data['FUserId']), data['FUserName'],int(data['FLevel']),int(data['FFollow']),int(data['FFollowed']), int(data['FSupported']), int(data['FExperience']), data['FAvatar'],getNowTime())
 		)
 		conn.commit()
+	except ValueError as e:
+		print("replaceUserData except, userId=" + str(data['FUserId']))
+		print data
+		print e
 	except pymysql.err.InternalError as e:
+		print("replaceUserData except, userId=" + str(data['FUserId']))
+		print data
 		print e
 	except UnicodeEncodeError as e:
 		print("replaceUserData except, userId=" + str(data['FUserId']))
+		print data
 		print e
 
 # update user live data
@@ -212,8 +219,18 @@ def replaceUserLive(data):
 		cur.execute("REPLACE INTO Tbl_Huajiao_Live(FLiveId,FUserId,FWatches,FPraises,FReposts,FReplies,FPublishTimestamp,FTitle,FImage,FLocation,FScrapedTime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s )", (int(data['relateid']),int(data['FUserId']), int(data['watches']),int(data['praises']),int(data['reposts']),int(data['replies']),int(data['publishtimestamp']),data['title'], data['image'], data['location'],getNowTime())
 		)
 		conn.commit()
+	except ValueError as e:
+		print("replaceUserLive except, userId=" + str(data['FUserId']))
+		print data
+		print e
 	except pymysql.err.InternalError as e:
-		print(e)
+		print("replaceUserLive except, userId=" + str(data['FUserId']))
+		print data
+		print e
+	except UnicodeEncodeError as e:
+		print("replaceUserLive except, userId=" + str(data['FUserId']))
+		print data
+		print e
 
 def main(argv):
 	if len(argv) < 2:
@@ -221,15 +238,16 @@ def main(argv):
 		exit()
 	if (argv[1] == 'spiderUserDatas'):
 		baseUrl = "http://www.huajiao.com/category/"
-		categoryNo = 2
-		pageCount = 10
-		if len(argv) == 4:
+		if len(argv) == 2:
+			spiderUserDatas(baseUrl)
+		elif len(argv) == 4:
 			categoryNo = argv[2]
 			pageCount = argv[3]
-		elif len(argv) == 3:
+			spiderUserDatas(baseUrl, categoryNo, pageCount)
+		else:
 			print("Usage: python huajiao.py [spiderUserDatas <categoryNo><pageCount>]")
 			exit()
-		spiderUserDatas(baseUrl, categoryNo, pageCount)
+		
 	elif (argv[1] == 'spiderUserLives'):
 		nums = 100
 		if len(argv) == 3:
