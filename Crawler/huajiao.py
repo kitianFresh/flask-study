@@ -12,6 +12,9 @@ import pymysql
 import time
 import datetime
 
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
 def getNowTime():
 	return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
 
