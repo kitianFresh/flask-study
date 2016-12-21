@@ -8,6 +8,99 @@ file.name是包含整个传递进来的路径的，如果仅仅想要获得文�
 返回的是 an array of tuple，即一条条记录的集合，you need for e in arr e[0] e[1] e[2]... to access
 ### PIL 中对 Image draw 之后进行 image.save，会毁坏原始图像
 use another copy of original image , or the draw operation will destroy original one if you save
+### 包导入错误
+```Python
+root = os.path.dirname(os.path.dirname(__file__))
+sys.path.append(root)
+```
+### POST 提交带文件数据的表单
+参考: [四种常见的 POST 提交数据方式](https://imququ.com/post/four-ways-to-post-data-in-http.html);[rfc1867](http://www.ietf.org/rfc/rfc1867.txt)
+```Python
+# reference: http://www.learntosolveit.com/python/web_urllib2_binary_upload.html
+import os
+import urllib2
+import itertools
+import mimetools
+import mimetypes
+from cStringIO import StringIO
+import urllib
+import urllib2
+import json
+import sys
+_width = len(repr(sys.maxsize-1))
+_fmt = '%%0%dd' % _width
+
+def _make_boundary():
+    # Craft a random boundary.
+    token = random.randrange(sys.maxsize)
+    boundary = ('=' * 15) + (_fmt % token) + '=='
+    return boundary
+
+class MultiPartForm(object):
+    """Accumulate the data to be used when posting a form."""
+
+    def __init__(self):
+        self.form_fields = []
+        self.files = []
+        self.boundary = mimetools.choose_boundary()
+        return
+    
+    def get_content_type(self):
+        return 'multipart/form-data; boundary=%s' % self.boundary
+
+    def add_field(self, name, value):
+        """Add a simple field to the form data."""
+        self.form_fields.append((name, value))
+        return
+
+    def add_file(self, fieldname, filename, fileHandle, mimetype=None):
+        """Add a file to be uploaded."""
+        body = fileHandle.read()
+        if mimetype is None:
+            mimetype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+        self.files.append((fieldname, filename, mimetype, body))
+        return
+    
+    def __str__(self):
+        """Return a string representing the form data, including attached files."""
+        # Build a list of lists, each containing "lines" of the
+        # request.  Each part is separated by a boundary string.
+        # Once the list is built, return a string where each
+        # line is separated by '\r\n'.  
+        parts = []
+        part_boundary = '--' + self.boundary
+        
+        # Add the form fields
+        # 参数是一个列表元素构成的列表
+        parts.extend(
+            [ part_boundary,
+              'Content-Disposition: form-data; name="%s"' % name,
+              '',
+              value,
+            ]
+            for name, value in self.form_fields
+            )
+        
+        # Add the files to upload
+        parts.extend(
+            [ part_boundary,
+              'Content-Disposition: file; name="%s"; filename="%s"' % \
+                 (field_name, filename),
+              'Content-Type: %s' % content_type,
+              '',
+              body,
+            ]
+            for field_name, filename, content_type, body in self.files
+            )
+        
+        # Flatten the list and add closing boundary marker,
+        # then return CR+LF separated data
+        # itertools.chain(*parts) 是对列表的列表的递归拆解成单个元素的列表
+        flattened = list(itertools.chain(*parts))
+        flattened.append('--' + self.boundary + '--')
+        flattened.append('')
+        return '\r\n'.join(flattened)
+```
 
 ## 坑爹的Fiddler
 千万不要装Fiddler，这个东西在Ubuntu下面不好使，基本上好多包都监听不了，而且还修改你的系统代理配置，导致我的wget curl一切网络有关的命令都无法使用了！真是坑爹啊！解决办法之一是暴力改回System wide proxy settings，可以参考[change-system-proxy-settings-command-line-ubuntu-desktop](http://ask.xmodulo.com/change-system-proxy-settings-command-line-ubuntu-desktop.html)，下面都是入坑之后的结果，都不能正常使用了。
