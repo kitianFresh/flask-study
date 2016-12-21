@@ -128,7 +128,7 @@ def calculation_value(self):
 Soc = SomeOtherClass()
 Soc.calculation_value
 ```
-```
+```Python
 # -*- coding: utf8 -*-
 
 def some_timing_or_spacing_operation():
