@@ -1,0 +1,3 @@
+PyMySQL
+BeautifulSoup4
+pillow
