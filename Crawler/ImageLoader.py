@@ -88,7 +88,9 @@ def getImage(url):
 
 def saveImage(url, show=False, dir='/home/kinny/Study/Crawler/images/huajiaogirls', size=(1024,1024)):
 	'''
-	resize the image and save
+	get an resized pil image according to url
+	:param url: an image url with an originalName, such as http://image.huajiao.com/4a4fe24f53cd4e2b98480bf4d63c313c.jpg
+	:return: a pil image and its originalName,all original images retrieve from url will be resized to 1024*1024
 	'''
 	userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36"
 	header = {}
@@ -122,8 +124,6 @@ def spiderAllImages(usernum=10, show=False, dir='/home/kinny/Study/Crawler/image
 		saveImage(url=imageurl, show=show)
 		print(str(count) + " huajiaogirl image: " + imageurl + " saved to " + dir)
 		
-		
-
 
 def main(argv):
 	if len(argv) < 2:

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import urllib2
 import itertools
 import mimetools
@@ -218,7 +219,7 @@ def detect_face(path, show=False, apiUrl="https://api-cn.faceplusplus.com/facepp
     del draw
 
 
-def detect_faces(imageNums=10, apiUrl="https://api-cn.faceplusplus.com/facepp/v3/detect", input='/home/kinny/Study/Crawler/images/huajiaogirls'):
+def detect_faces(imageNums=10, show=False, apiUrl="https://api-cn.faceplusplus.com/facepp/v3/detect", input='/home/kinny/Study/Crawler/images/huajiaogirls'):
     count = 0
     image_names = os.listdir(input)
     detected_face_image_names = getBeautyFace(2000)
@@ -231,12 +232,22 @@ def detect_faces(imageNums=10, apiUrl="https://api-cn.faceplusplus.com/facepp/v3
             continue
         path = os.path.join(input, image)
         print "detect " + path
-        detect_face(path, True, apiUrl)
+        detect_face(path, show, apiUrl)
         count += 1
         # avoid api invoke concurrency limits
         from time import sleep
-        sleep(10)
-    
+        sleep(5)
+
+def main(argv):
+    if len(argv) == 3:
+        nums = argv[1]
+        show = True if argv[2] == "true" else False
+        detect_faces(imageNums=nums, show=show)
+    else:
+        print("Usage: python FaceFilter.py <Nums><show:true/false>")
+        exit()	
+	
+
 
 if __name__ == '__main__':
-   detect_faces(100)
+   main(sys.argv)
