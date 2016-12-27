@@ -121,22 +121,3 @@ using metaclasses, but using metaclasses is sufficiently obscure that there is s
 attraction to having an easier way to make simple modifications to classes. 
 For Python 2.4, only function/method decorators are being added.
 '''
-# method decorator 如果没有其他参数，直接用 self 做func_wrapper()的参数，如果还有其他参数，
-# 则用(*args, **kwargs)更加通用
-def p_decorate(func):
-   def func_wrapper(*args, **kwargs):
-       return "<p>{0}</p>".format(func(*args, **kwargs))
-   return func_wrapper
-
-class Person(object):
-    def __init__(self):
-        self.name = "John"
-        self.family = "Doe"
-
-    @p_decorate
-    def get_fullname(self):
-        return self.name+" "+self.family
-
-my_person = Person()
-
-print my_person.get_fullname()
