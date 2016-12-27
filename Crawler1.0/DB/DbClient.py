@@ -24,7 +24,9 @@ class DbClient(object):
             pass
         assert __type, 'type error, Not support Database type: {}'.format(self.config.db_type)
 
-        self.client = getattr(importlib.import_module(__type), __type)()
+        self.client = getattr(importlib.import_module(__type), __type)(name=self.config.db_name,
+                                                                       host=self.config.db_host,
+                                                                       port=self.config.db_port)
 
     def get(self, **kwargs):
         return self.client.get(**kwargs)

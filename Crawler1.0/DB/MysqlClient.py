@@ -7,27 +7,27 @@ import pymysql
 
 from Util.GetConfig import GetConfig
 
-class DbClient(object):
+class MysqlClient(object):
 
     '''
-    DbClient for mutiple database support
+    Mysql Client
     ''' 
 
-    def __init__(self):
-        self.config = GetConfig()
-        self.conn = 
+    def __init__(self, name, host, port):
+        self.name = name
+        self.conn = pymysql.connect(host=host, port=port, user='root', passwd='777', db=name, charset='utf8')
 
     def get(self, **kwargs):
-        return self.client.get(**kwargs)
+        pass
 
     def put(self, value, **kwargs):
-        return self.client.put(value, **kwargs)
+        pass
 
     def delete(self, value, **kwargs):
-        return self.client.delete(value, **kwargs)
+        pass
 
     def getAll(self):
-        return self.client.getAll()
+        pass
 
     def changeTable(self, name):
-        self.client.changeTable(name)
+        self.name = name

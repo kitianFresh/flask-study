@@ -251,3 +251,5 @@ python ImageLoader.py spiderAllImages
 最后过滤并标记带人脸的照片，特征点存储到MySQL，标记后的图片存储到本地文件系统
 python FaceFilter.py
 ```
+
+![TblHujiaoLiveImage]()
