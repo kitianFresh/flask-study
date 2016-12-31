@@ -2,8 +2,12 @@
 
 ## 理解装饰器
 ### 1. function 函数 & nested_function
-在Python 中， 函数是first-class citizen第一等公民， 即和其他变量一样具有属性，可以赋值等。可以直接当做参数传递给另一个函数，可以当函数的返回值。
-这在 C 语言中是没有的， C 语言只能间接通过函数指针来完成函数参数的传递。但是，和C/Java不同的是，Python还支持在函数内部定义函数；
+在Python 中， 函数是**first-class citizen**第一等公民， 即和其他变量一样可以赋值,而且还具有很多属性可以访问等。可以直接当做参数传递给另一个函数，可以当函数的返回值。
+这在 C 语言中是没有的， C 语言只能间接通过函数指针来完成函数参数的传递。
+```python
+def 
+```
+但是，和C/Java不同的是，Python还支持在函数内部定义函数；
 ```python
 def nested_function():
     def first_func():
