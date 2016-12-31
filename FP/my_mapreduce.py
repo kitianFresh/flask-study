@@ -30,10 +30,30 @@ def pineapple(f):
         return "pineapple" + f(*args)
     return wrapped
 
+def pen(f):
+    def wrapped(*args):
+        return "pen" + f(*args)
+    return wrapped
 
-@apple
-def pen():
-    return 'pen'
+def f1():
+    return ''
 
-print pen()
+a_pen = pen(f1)
+print a_pen() + '\n'
 
+an_apple = apple(f1)
+print an_apple() + '\n'
+
+apple_pen = apple(pen(f1))
+print apple_pen() + '\n'
+
+print a_pen() + '\n'
+a_pineapple = pineapple(f1)
+print a_pineapple() + '\n'
+pineapple_pen = pineapple(pen(f1))
+print pineapple_pen() + '\n'
+
+print apple_pen() + '\n'
+print pineapple_pen() + '\n'
+ppap = pen(pineapple(apple(pen(f1))))
+print ppap() + '\n'

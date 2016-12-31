@@ -48,9 +48,9 @@ def trace_tree(f):
         return value
     return wrapped
 
-# print '-------------trace_tree-----------'
-# fib = trace_tree(fib)
-# print fib(4)
+print '-------------trace_tree-----------'
+fib = trace_tree(fib)
+print fib(4)
 
 
 def memorize(f):
@@ -61,10 +61,10 @@ def memorize(f):
         return cache[n]
     return wrapped
 
-print '-------------memorize_trace_tree-----------'
-fib = trace_tree(fib)
-fib = memorize(fib)
-print fib(4)
+# print '-------------memorize_trace_tree-----------'
+# fib = trace_tree(fib)
+# fib = memorize(fib)
+# print fib(4)
 
 import time
 def profile(f):
@@ -76,10 +76,10 @@ def profile(f):
         return value
     return wrapped
 
-print '-------------timing_trace_tree-----------'
-fib = memorize(trace_tree(fib))
-f = profile(fib)
-print f(20)
+# print '-------------timing_trace_tree-----------'
+# fib = memorize(trace_tree(fib))
+# f = profile(fib)
+# print f(20)
 
 # 对递归函数的装饰器，要特别小心，如果你要包装递归函数，并且想知道每一步递归的具体调用情况，
 # 必须要让包装后的函数名和原来的递归函数名字一样，要不然被包装的递归函数只是在第一层包装了，
