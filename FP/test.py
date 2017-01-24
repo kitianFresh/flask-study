@@ -53,3 +53,46 @@ def quck_sort(comparator, low, high, l):
 l = [9,4,6,3,5,7]
 
 print quck_sort(compare, 0, 5, l)
+
+
+
+def fib(n):
+    if n is 0 or n is 1:
+        return 1
+    else:
+        return fib(n-1) + fib(n-2)
+
+def trace_tree(f):
+    f.indent = 0
+    def wrapped(n):
+        print '| ' * f.indent + '|--', f.__name__, n
+        f.indent += 1
+        value = f(n)
+        print '| ' * f.indent + '|--', 'return', repr(value)
+        f.indent -= 1
+        return value
+    return wrapped
+
+def memoize(f):
+    cache = {}
+    def wrapped(n):
+        if n not in cache:
+            cache[n] = f(n)
+        return cache[n]
+    return wrapped
+
+
+import time
+def profile(f):
+    def wrapped(n):
+        start = time.time()
+        value = f(n)
+        end = time.time()
+        print "time taken: %lf sec" % (end - start)
+        return value
+    return wrapped
+
+print '-------------timing_trace_tree-----------'
+fib = memoize(trace_tree(fib))
+f = profile(fib)
+print f(20)

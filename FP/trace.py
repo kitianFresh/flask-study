@@ -53,7 +53,7 @@ fib = trace_tree(fib)
 print fib(4)
 
 
-def memorize(f):
+def memoize(f):
     cache = {}
     def wrapped(n):
         if n not in cache:
@@ -61,9 +61,9 @@ def memorize(f):
         return cache[n]
     return wrapped
 
-# print '-------------memorize_trace_tree-----------'
+# print '-------------memoize_trace_tree-----------'
 # fib = trace_tree(fib)
-# fib = memorize(fib)
+# fib = memoize(fib)
 # print fib(4)
 
 import time
@@ -77,25 +77,25 @@ def profile(f):
     return wrapped
 
 # print '-------------timing_trace_tree-----------'
-# fib = memorize(trace_tree(fib))
+# fib = memoize(trace_tree(fib))
 # f = profile(fib)
 # print f(20)
 
 # 对递归函数的装饰器，要特别小心，如果你要包装递归函数，并且想知道每一步递归的具体调用情况，
 # 必须要让包装后的函数名和原来的递归函数名字一样，要不然被包装的递归函数只是在第一层包装了，
 # 但是后面的每一层调用还是调用他原来的本尊（未加工的那个原始的函数）。这里只要知道函数式编程的本质是
-# 函数是一等公民，可以像变量一样随时修改，赋值，还可以当参数和返回。例如 t = memorize(trace_tree(fib))
+# 函数是一等公民，可以像变量一样随时修改，赋值，还可以当参数和返回。例如 t = memoize(trace_tree(fib))
 '''
-t = memorize(trace_tree(fib))
+t = memoize(trace_tree(fib))
 print t(4)
 |-- fib 4
 | |-- return 5
 5
 打印的只有第一层的，但是确实算出来了最终结果，这说明fib一定完成了调用，但是trace_tree并没有，为什么？因为这里的trace_tree
 并没有被改名为fib啊，所以在第一层的trace_tree打印之后，当递归进入下一层的时候，调用fib函数，可是fib函数是原来那个没有被装饰过的，
-这就导致了看不到后面几层的调用过程了。如果你把先把trace_tree(fib)赋值给fib，然后再传递给memorize，就可以了，或者直接最终赋值fib
-即 fib = trace_tree(fib) fib = memorize(fib)[如果这里改成f = memorize(fib) 呢？那结果就是可以trace，但是只有第一层会被缓存，即缓存失效了] 
-或一步到位 fib = memorize(trace_tree(fib))
+这就导致了看不到后面几层的调用过程了。如果你把先把trace_tree(fib)赋值给fib，然后再传递给memoize，就可以了，或者直接最终赋值fib
+即 fib = trace_tree(fib) fib = memoize(fib)[如果这里改成f = memoize(fib) 呢？那结果就是可以trace，但是只有第一层会被缓存，即缓存失效了] 
+或一步到位 fib = memoize(trace_tree(fib))
 
 '''
 def outer():
