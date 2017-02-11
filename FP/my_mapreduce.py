@@ -21,19 +21,19 @@ print map(lambda x: x*x , l)
 
 
 def apple(f):
-    def wrapped(*args):
+    def wrapper(*args):
         return "apple" + f(*args)
-    return wrapped
+    return wrapper
 
 def pineapple(f):
-    def wrapped(*args):
+    def wrapper(*args):
         return "pineapple" + f(*args)
-    return wrapped
+    return wrapper
 
 def pen(f):
-    def wrapped(*args):
+    def wrapper(*args):
         return "pen" + f(*args)
-    return wrapped
+    return wrapper
 
 def f1():
     return ''

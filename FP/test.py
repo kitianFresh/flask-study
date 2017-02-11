@@ -96,3 +96,27 @@ print '-------------timing_trace_tree-----------'
 fib = memoize(trace_tree(fib))
 f = profile(fib)
 print f(20)
+
+
+'''
+The instance of the default value is bound at the time the function is defined. Consequently, there is a single instance of the mutable object that will be used across all calls to the function.
+'''
+def add_elements(new_elements, base_elements=[]):
+    for elem in new_elements:
+        base_elements.append(elem)
+    return base_elements
+
+print add_elements([1,2,3])
+
+print add_elements([1,2,3])
+
+def add_elements1(new_elements, base_elements=None):
+    if base_elements is None:
+        base_elements = []
+    for elem in new_elements:
+        base_elements.append(elem)
+    return base_elements
+
+print add_elements1([1,2,3])
+
+print add_elements1([1,2,3])
