@@ -453,3 +453,5 @@ sudo pip install numpy
 sudo apt-get install python-numpy
 ```
 基本上安装Python包都可以使用 sudo apt-get install python-XXX 或者直接 sudo pip install XXX，如果前者找不到，看看提示，是不是名字不一样，基本大多数包都支持 Ubuntu package
+
+
