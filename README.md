@@ -409,3 +409,47 @@ var vm = new Vue({
 vm.b = 2
 ```
 
+## Git出现merge或者pull与本地工作区状态冲突
+```
+git remote -v 
+git fetch upstrem
+git merge upstrem/master
+Updating c5ba2bc..ad63656
+error: Your local changes to the following files would be overwritten by merge:
+    BloodTestReportOCR/static/index.html
+    BloodTestReportOCR/view.py
+Please, commit your changes or stash them before you can merge.
+Aborting
+```
+
+方案1： git stash，他会把当前工作区的保存到一个Git栈中,当需要取出来的时候，git stash pop会从Git栈中读取最近一次保存的内容，恢复工作区的相关内容
+```
+git stash
+git merge
+
+git stash list： 所有保存的git栈内的备份
+git stash pop： 弹出栈顶内容
+git stash clear： 清空Git栈
+```
+方案2：放弃本地修改就可以了
+```
+git reset --hard
+git pull
+```
+
+# 低配机器安装tensorflow出现MemoryError
+原因是pip 安装默认会进行缓存，全部读到内存中，过大的包就会出现该错误
+操作系统    Ubuntu Server 16.04.1 LTS 64位
+CPU 1核
+内存  1GB
+系统盘 20GB(云硬盘)   disk-qy4kp18l
+公网带宽    1Mbps
+```
+sudo pip  --no-cache-dir install --upgrade https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-0.12.0rc0-cp27-none-linux_x86_64.whl
+```
+以下两者的区别，在翻墙的时候表现的就尤其明显，前者会非常慢，这里就是因为 后者 是package 安装形式，主要是从Ubuntu的软件源找包并安装，国内都会有相应的镜像，速度不慢，但是前者就会直接到Python的package站点下载，非常慢，基本下不动
+```
+sudo pip install numpy
+sudo apt-get install python-numpy
+```
+基本上安装Python包都可以使用 sudo apt-get install python-XXX 或者直接 sudo pip install XXX，如果前者找不到，看看提示，是不是名字不一样，基本大多数包都支持 Ubuntu package
