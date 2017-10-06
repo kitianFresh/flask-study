@@ -134,4 +134,8 @@ For Python 2.4, only function/method decorators are being added.
  - [Advanced Uses of Python Decorators](https://www.codementor.io/python/tutorial/advanced-use-python-decorators-class-function)
  - [Python decorators: metaprogramming with style](http://blog.thedigitalcatonline.com/blog/2015/04/23/python-decorators-metaprogramming-with-style/#.WGIjJ3V97CJ)
 
+# Python property lazy
 
+# Python generator yield
+
+# Python contextmanager

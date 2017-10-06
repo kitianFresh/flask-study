@@ -32,9 +32,10 @@ outgoing = {
 
 ```python
 #python2 写法
-return super(Task, self).__new__(cls, task_function, args)
+return super(Task, cls).__new__(cls, task_function, args)
 
 #python3 写法
 return super().__new__(cls, task_function, args)
 
 ```
+

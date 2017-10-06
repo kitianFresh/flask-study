@@ -87,7 +87,7 @@ class Project:
         """Context manager, 强制让 任务真正被调用.
 
         尽管project 已经缓存了某个任务的输出结果, 
-        在这个上下文管理器中再次运行这个任务将会让project再次调用这个任务.
+        在这个上下文管理器中再次运行这个任务将会让project真正再次调用这个任务.而不是使用缓存!
 
             with project.cache_off():
                 my_task()
