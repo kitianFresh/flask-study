@@ -74,10 +74,9 @@ def getUserId_deprecated(liveId):
 def getUserId(liveId):
 	html = urlopen("http://www.huajiao.com/" + "l/" + str(liveId))
 	bsObj = BeautifulSoup(html, "html.parser")
-	authorInfo = bsObj.findAll(id="author-info")
-	authorId = authorInfo[0].findAll("p", class_="author-id")
-	#print authorId[0].text
-	res = authorId[0].text.split(' ')[1]
+	# authorInfo = bsObj.findAll(id="author-info")
+	authorInfo = bsObj.findAll("span",class_ ="js-author-id")
+	res = authorInfo[0].text
 	print "UserId: " + res
 	return res
 
@@ -90,11 +89,10 @@ def getUserData(userId):
 	try:
 		userInfoObj = bsObj.find("div", {"id":"userInfo"})
 		data['FAvatar'] = userInfoObj.find("div", {"class": "avatar"}).img.attrs['src']
-		userId = userInfoObj.find("p", {"class":"user_id"}).get_text()
 		data['FUserId'] = re.findall("[0-9]+", userId)[0]
 		#print("data['FUserId']: " + data['FUserId'])
 		tmp = userInfoObj.h3.get_text('|', strip=True).split('|')
-		#print("UserName: " + tmp[0].encode("utf8"))
+		# print("UserName: " + tmp[0].encode("utf8"))
 		data['FUserName'] = tmp[0]
 		data['FLevel'] = tmp[1]
 		tmp = userInfoObj.find("ul", {"class":"clearfix"}).get_text('|', strip=True).split('|')
@@ -149,7 +147,7 @@ def getTimestamp():
 	return (time.mktime(datetime.datetime.now().timetuple()))
 
 def getMysqlConn():
-	conn = pymysql.connect(host='localhost', port=3306, user='root', passwd='777', db='huajiaogirls', charset='utf8mb4')
+	conn = pymysql.connect(host='localhost', port=3306, user='root', passwd='1234', db='huajiaogirls', charset='utf8mb4')
 	return conn
 
 def getUserCount():
