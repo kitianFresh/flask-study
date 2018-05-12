@@ -1,5 +1,5 @@
-DROP DATABASE IF EXISTS `huajiaogirls`;
-CREATE DATABASE `huajiaogirls` DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci;
+-- DROP DATABASE IF EXISTS `huajiaogirls`;
+-- CREATE DATABASE `huajiaogirls` DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci;
 USE `huajiaogirls`;
 set names utf8mb4;
 
@@ -12,7 +12,7 @@ CREATE TABLE `Tbl_Huajiao_Live` (
     `FReposts` INT UNSIGNED NOT NULL DEFAULT 0  COMMENT 'unknown',
     `FReplies` INT UNSIGNED NOT NULL DEFAULT 0  COMMENT 'unknown',
     `FPublishTimestamp` INT UNSIGNED NOT NULL COMMENT '发布日期',
-    `FTitle` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '直播名称',
+    `FTitle` VARCHAR(512) NOT NULL DEFAULT '' COMMENT '直播名称',
     `FImage` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '直播封面',
     `FLocation` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '地点',
     `FScrapedTime` timestamp NOT NULL COMMENT '爬虫更新时间',

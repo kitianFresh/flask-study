@@ -13,7 +13,7 @@ except ImportError:
 
 
 def getMysqlConn():
-	conn = pymysql.connect(host='localhost', port=3306, user='root', passwd='777', db='huajiaogirls', charset='utf8mb4')
+	conn = pymysql.connect(host='localhost', port=3306, user='root', passwd=os.getenv("MYSQL_PASSWORD"), db='huajiaogirls', charset='utf8mb4')
 	return conn
 
 def selectUserIds(num):
@@ -97,6 +97,8 @@ def saveImage(url, show=False, dir='/home/kinny/Study/Crawler/images/huajiaogirl
 	header['User-Agent'] = userAgent
 	request = Request(url, headers=header)
 	originalName = url.split('/')[-1]
+	print url
+	print originalName
 	try:
 		resp = urlopen(request)
 	except urllib2.URLError as e:
@@ -107,7 +109,10 @@ def saveImage(url, show=False, dir='/home/kinny/Study/Crawler/images/huajiaogirl
 	out = img.resize(size)
 	if show:
 		out.show()
-	out.save(os.path.join(dir,originalName))
+	try:
+		out.save(os.path.join(dir,originalName+'.jpg'))
+	except IOError as e:
+		print e
 
 def spiderAllImages(usernum=10, show=False, dir='/home/kinny/Study/Crawler/images/huajiaogirls'):
 	count = 0
@@ -121,7 +126,7 @@ def spiderAllImages(usernum=10, show=False, dir='/home/kinny/Study/Crawler/image
 			print("huajiaogirl image: " + imageurl + " have downloaded")
 			continue
 		count += 1
-		saveImage(url=imageurl, show=show)
+		saveImage(url=imageurl, dir=dir, show=show)
 		print(str(count) + " huajiaogirl image: " + imageurl + " saved to " + dir)
 		
 

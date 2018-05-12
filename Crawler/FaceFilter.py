@@ -77,7 +77,7 @@ class MultiPartForm(object):
         return '\r\n'.join(flattened)
 
 def getMysqlConn():
-    conn = pymysql.connect(host='localhost', port=3306, user='root', passwd='777', db='huajiaogirls', charset='utf8mb4')
+    conn = pymysql.connect(host='localhost', port=3306, user='root', passwd=os.getenv("MYSQL_PASSWORD"), db='huajiaogirls', charset='utf8mb4')
     return conn
 
 def insertBeautyFace(data):
@@ -174,6 +174,7 @@ def detect_face(path, show=False, apiUrl="https://api-cn.faceplusplus.com/facepp
                   fileHandle=image)
     
     # Build the request
+    apiUrl = apiUrl + '?return_attributes=gender,age'
     request = urllib2.Request(apiUrl)
     body = str(form)
     request.add_header('Content-type', form.get_content_type())
@@ -182,7 +183,7 @@ def detect_face(path, show=False, apiUrl="https://api-cn.faceplusplus.com/facepp
     pp = pprint.PrettyPrinter()
     r = urllib2.urlopen(request)
     features = json.loads(r.read())
-    #pp.pprint(features)
+    # pp.pprint(features)
     # response [] means no faces
     if not features['faces']:
         print path + " contains no faces!"
@@ -195,6 +196,14 @@ def detect_face(path, show=False, apiUrl="https://api-cn.faceplusplus.com/facepp
     im = im_original.copy()
     draw = ImageDraw.Draw(im)
     landmarks = features['faces'][0]['landmark']
+    attributes = features['faces'][0]['attributes']
+    if len(features['faces']) > 2:
+        print path + " detect too many faces, filtered"
+        return 
+    for face in features['faces']:
+        if face['attributes']['gender']['value'] == 'Male':
+            print path + " detect man face, filtered"
+            return
     draw_contour(draw, landmarks, 5)
     draw_mouth(draw, landmarks, 3)
     draw_nose(draw, landmarks, 3)
@@ -204,35 +213,41 @@ def detect_face(path, show=False, apiUrl="https://api-cn.faceplusplus.com/facepp
     if show:
         #im_original.show()
         im.show()
-    out = os.path.join(output, os.path.basename(image.name))
-    im.save(out)
+    marked_output = os.path.join(output, 'marked')
+    if not os.path.exists(marked_output):
+        os.mkdir(marked_output)
+    im.save(os.path.join(marked_output, os.path.basename(image.name)))
+    clear_output = os.path.join(output, 'clear')
+    if not os.path.exists(clear_output):
+        os.mkdir(clear_output)
+    im_original.save(os.path.join(clear_output, os.path.basename(image.name)))
     # sync to mysql 
     data = {
         "FImageUrl": "http://image.huajiao.com/" + os.path.basename(image.name), 
-        "FImageOriginal": path, 
-        "FImageFiltered": out, 
+        "FImageOriginal": clear_output, 
+        "FImageFiltered": marked_output, 
         "FImageLandmarks": json.dumps(landmarks)
     }
     insertBeautyFace(data)
-    print "save detected face image to " + out
+    print "save detected face image to " + marked_output
     image.close()
     del draw
 
 
-def detect_faces(imageNums=10, show=False, apiUrl="https://api-cn.faceplusplus.com/facepp/v3/detect", input='/home/kinny/Study/Crawler/images/huajiaogirls'):
+def detect_faces(imageNums=10, show=False, apiUrl="https://api-cn.faceplusplus.com/facepp/v3/detect", input='/home/kinny/Study/Crawler/images/huajiaogirls', output="/home/kinny/Study/Crawler/images/huajiaogirlfaces"):
     count = 0
     image_names = os.listdir(input)
-    detected_face_image_names = getBeautyFace(2000)
+    detected_face_image_names = getBeautyFace(imageNums)
     
     for image in image_names:
+        path = os.path.join(input, image)
         if count == imageNums:
             break
         if image in detected_face_image_names:
-            print path + "have already detected"
+            print path + " have already detected"
             continue
-        path = os.path.join(input, image)
         print "detect " + path
-        detect_face(path, show, apiUrl)
+        detect_face(path, show, apiUrl, output)
         count += 1
         # avoid api invoke concurrency limits
         from time import sleep
@@ -243,8 +258,14 @@ def main(argv):
         nums = argv[1]
         show = True if argv[2] == "true" else False
         detect_faces(imageNums=nums, show=show)
+    elif len(argv) == 5:
+        nums = argv[1]
+        show = True if argv[2] == "true" else False
+        inputs = argv[3]
+        output = argv[4]
+        detect_faces(imageNums=nums, show=show, input=inputs, output=output)
     else:
-        print("Usage: python FaceFilter.py <Nums><show:true/false>")
+        print("Usage: python FaceFilter.py <Nums><show:true/false><input><output>")
         exit()	
 	
 
